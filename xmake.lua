@@ -9,7 +9,7 @@ target("bf")
     add_files("bf.c")
 
 xpack("bf")
-    set_formats("nsis")
+    set_formats("nsis", "zip")
     set_title("Brainfuck interpreter")
     set_author("chen_qingyu")
     set_description("A simple Brainfuck interpreter implemented in C.")
