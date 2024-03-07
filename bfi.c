@@ -1,19 +1,18 @@
 /**
- * @file bf.c
- * @author chen_qingyu (chen_qingyu@qq.com)
+ * @file bfi.c
+ * @author Qingyu Chen (chen_qingyu@qq.com)
  * @brief A simple Brainfuck interpreter implemented in C. Reference to http://brainfuck.org/
- * @version 1.0.0
+ * @version 1.1.0
  * @date 2022.10.08
  *
- * @copyright Copyright (c) 2022 - 2023
- *
+ * @copyright Copyright (c) 2022 - 2024
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define BF_VERSION "1.0.0"
+#define BFI_VERSION "1.1.0"
 
 #define MAX_CODE_SIZE 65536
 #define MEMORY_SIZE (65536 * 4)
@@ -43,13 +42,13 @@ int main(int argc, char* argv[])
 {
     if (argc != 2)
     {
-        fprintf(stderr, "Usage: bf <filename>\n");
+        fprintf(stderr, "Usage: bfi <filename>\n");
         exit(EXIT_FAILURE);
     }
 
     if (strcmp(argv[1], "--version") == 0)
     {
-        printf("bf.exe %s\n", BF_VERSION);
+        printf("bfi.exe %s\n", BFI_VERSION);
         exit(EXIT_SUCCESS);
     }
 
@@ -67,7 +66,7 @@ void read_file(char* file)
     FILE* program;
     if (fopen_s(&program, file, "r"))
     {
-        fprintf(stderr, "Can't open file: \"%s\".\n", file);
+        fprintf(stderr, "Error: Can't open file: \"%s\".\n", file);
         exit(EXIT_FAILURE);
     }
 
@@ -91,7 +90,7 @@ void preprocess()
         {
             if (stack_ptr == 0) // and there is no '[' left on the stack, it's an error.
             {
-                fprintf(stderr, "Unmatched ']' at position %d.", code_ptr);
+                fprintf(stderr, "Error: Unmatched ']' at position %d.", code_ptr);
                 exit(EXIT_FAILURE);
             }
             else
@@ -103,7 +102,7 @@ void preprocess()
     }
     if (stack_ptr > 0) // any unmatched '[' still left on the stack raise an error too.
     {
-        fprintf(stderr, "Unmatched '[' at position %d.", stack[--stack_ptr]);
+        fprintf(stderr, "Error: Unmatched '[' at position %d.", stack[--stack_ptr]);
         exit(EXIT_FAILURE);
     }
 }

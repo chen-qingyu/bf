@@ -1,17 +1,17 @@
-### bf
+### Brief
 
 A simple Brainfuck interpreter implemented in C.
 
-### usage
+### Usage
 
-`bf <filename>`
+`bfi <filename>`
 
-### example
+### Example
 
 ```
 $ cat hello.bf
 ++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.
 
-$ bf hello.bf
+$ bfi hello.bf
 Hello World!
 ```
