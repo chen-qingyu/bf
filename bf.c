@@ -1,18 +1,18 @@
 /**
- * @file bfi.c
+ * @file bf.c
  * @author Qingyu Chen (chen_qingyu@qq.com)
  * @brief A simple Brainfuck interpreter implemented in C. Reference to http://brainfuck.org/
- * @version 1.1.0
- * @date 2022.10.08
+ * @version 1.0.0
+ * @date 2021.04.25
  *
- * @copyright Copyright (c) 2022 - 2024
+ * @copyright Copyright (c) 2021
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define BFI_VERSION "1.1.0"
+#define BF_VERSION "1.0.0"
 
 #define MAX_CODE_SIZE 65536
 #define MEMORY_SIZE (65536 * 4)
@@ -42,13 +42,13 @@ int main(int argc, char* argv[])
 {
     if (argc != 2)
     {
-        fprintf(stderr, "Usage: bfi <filename>\n");
+        fprintf(stderr, "Usage: bf <filename>\n");
         exit(EXIT_FAILURE);
     }
 
     if (strcmp(argv[1], "--version") == 0)
     {
-        printf("bfi.exe %s\n", BFI_VERSION);
+        printf("bf.exe %s\n", BF_VERSION);
         exit(EXIT_SUCCESS);
     }
 

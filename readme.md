@@ -4,7 +4,7 @@ A simple Brainfuck interpreter implemented in C.
 
 ### Usage
 
-`bfi <filename>`
+`bf <filename>`
 
 ### Example
 
@@ -12,6 +12,6 @@ A simple Brainfuck interpreter implemented in C.
 $ cat hello.bf
 ++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.
 
-$ bfi hello.bf
+$ bf hello.bf
 Hello World!
 ```
