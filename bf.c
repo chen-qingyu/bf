@@ -12,26 +12,18 @@
 
 #define BF_VERSION "1.1.0"
 
-#define CODE_SIZE 65536
-#define MEMORY_SIZE (65536 * 4)
-
 // Copy of the program code.
-char code[CODE_SIZE] = {0};
-int code_ptr = 0;
-int code_length = 0;
-
-// The memory used by the brainfuck program.
-short int memory[MEMORY_SIZE] = {0};
-int memory_ptr = 0;
+char* code = NULL;
+int code_size = 0;
 
 // To save matching '[' for each ']' and vice versa.
-int targets[CODE_SIZE] = {0};
+int* targets = NULL;
 
 // Show help message.
 void show_help();
 
 // Read the contents of the file.
-void read_file(char* file);
+void read_file(const char* file);
 
 // Preprocess and check whether the brackets match.
 void preprocess();
@@ -47,10 +39,10 @@ int main(int argc, char* argv[])
         exit(EXIT_FAILURE);
     }
 
-    // Flag for comment feature: ';'
+    // Flag for comment feature: ';'.
     int enable_comment = 0;
 
-    // Flag for debug feature: '#'
+    // Flag for debug feature: '#'.
     int enable_debug = 0;
 
     for (int i = 1; i < argc; i++)
@@ -89,6 +81,9 @@ int main(int argc, char* argv[])
 
     interpret(enable_comment, enable_debug);
 
+    free(code);
+    free(targets);
+
     return EXIT_SUCCESS;
 }
 
@@ -103,34 +98,55 @@ void show_help()
     puts("    -h, --help     Show this help message and exit.");
 }
 
-void read_file(char* file)
+void check_pointer(void* p)
 {
+    if (p == NULL)
+    {
+        fprintf(stderr, "Error: Memory allocation failed.\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void read_file(const char* file)
+{
+    // Open file.
     FILE* program;
-    if (fopen_s(&program, file, "r"))
+    if (fopen_s(&program, file, "rb"))
     {
         fprintf(stderr, "Error: Can't open file: \"%s\".\n", file);
         exit(EXIT_FAILURE);
     }
 
-    code_length = fread(code, 1, CODE_SIZE, program);
+    // Allocate memory for code and targets.
+    fseek(program, 0, SEEK_END);
+    code_size = ftell(program);
+    code = (char*)calloc(code_size, sizeof(char));
+    check_pointer(code);
+    targets = (int*)calloc(code_size, sizeof(int));
+    check_pointer(targets);
+
+    // Read file.
+    rewind(program);
+    fread(code, 1, code_size, program);
     fclose(program);
 }
 
 void preprocess()
 {
     // To store locations of still-unmatched '['s.
-    int stack[CODE_SIZE];
+    int* stack = (int*)calloc(code_size, sizeof(int));
+    check_pointer(stack);
     int stack_ptr = 0;
 
-    for (code_ptr = 0; code_ptr < code_length; code_ptr++)
+    for (int code_ptr = 0; code_ptr < code_size; code_ptr++)
     {
-        if (code[code_ptr] == '[') // put each '[' on the stack.
+        if (code[code_ptr] == '[') // put each '[' on the stack
         {
             stack[stack_ptr++] = code_ptr;
         }
-        if (code[code_ptr] == ']') // if meet a ']',
+        if (code[code_ptr] == ']') // if meet a ']'
         {
-            if (stack_ptr == 0) // and there is no '[' left on the stack, it's an error.
+            if (stack_ptr == 0) // and there is no '[' left on the stack, it's an error
             {
                 fprintf(stderr, "Error: Unmatched ']' at position %d.", code_ptr);
                 exit(EXIT_FAILURE);
@@ -138,21 +154,42 @@ void preprocess()
             else
             {
                 targets[code_ptr] = stack[--stack_ptr]; // pop the matching '[', save it as the match for the current ']'
-                targets[stack[stack_ptr]] = code_ptr;   // and save the current ']' as the match for it.
+                targets[stack[stack_ptr]] = code_ptr;   // and save the current ']' as the match for it
             }
         }
     }
-    if (stack_ptr > 0) // any unmatched '[' still left on the stack raise an error too.
+    if (stack_ptr > 0) // any unmatched '[' still left on the stack raise an error too
     {
         fprintf(stderr, "Error: Unmatched '[' at position %d.", stack[--stack_ptr]);
         exit(EXIT_FAILURE);
     }
+
+    free(stack);
+}
+
+int next_power_of_two(int n)
+{
+    if (n <= 1)
+    {
+        return 2;
+    }
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n++;
+    return n;
 }
 
 void interpret(int enable_comment, int enable_debug)
 {
-    int c;
-    for (code_ptr = 0; code_ptr < code_length; code_ptr++)
+    // The memory used by the program runtime.
+    int memory_size = next_power_of_two(code_size + 8); // at least 16 bytes
+    char* memory = (char*)calloc(memory_size, sizeof(char));
+    check_pointer(memory);
+    int memory_ptr = 0;
+
+    int ch = 0;
+    for (int code_ptr = 0; code_ptr < code_size; code_ptr++)
     {
         switch (code[code_ptr])
         {
@@ -168,19 +205,31 @@ void interpret(int enable_comment, int enable_debug)
 
             // Move data pointer to next address.
             case '>':
-                memory_ptr++;
+                // Dynamic memory growth at runtime.
+                if (++memory_ptr > memory_size / 2)
+                {
+                    int old_size = memory_size;
+                    memory_size = next_power_of_two(memory_size);
+                    memory = (char*)realloc(memory, memory_size * sizeof(char));
+                    check_pointer(memory);
+                    memset(memory + old_size, 0, memory_size - old_size);
+                }
                 break;
 
             // Move data pointer to previous address.
             case '<':
-                memory_ptr--;
+                if (--memory_ptr < 0)
+                {
+                    fprintf(stderr, "Error: Memory pointer crosses memory lower bound.");
+                    exit(EXIT_FAILURE);
+                }
                 break;
 
             // Accept one character from user.
             case ',':
-                if ((c = getchar()) != EOF)
+                if ((ch = getchar()) != EOF)
                 {
-                    memory[memory_ptr] = c;
+                    memory[memory_ptr] = ch;
                 }
                 break;
 
@@ -222,7 +271,7 @@ void interpret(int enable_comment, int enable_debug)
                     printf("\n");
                     for (int i = 0; i < 16; i++)
                     {
-                        printf("%02X ", (signed char)memory[i]);
+                        printf("%02hhX ", memory[i]);
                     }
                     printf("\n%*s\n", memory_ptr * 3 + 2, "^^");
                 }
@@ -233,4 +282,6 @@ void interpret(int enable_comment, int enable_debug)
                 break;
         }
     }
+
+    free(memory);
 }
