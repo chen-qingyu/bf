@@ -1,24 +1,22 @@
 /**
  * @file bf.c
- * @author Qingyu Chen (chen_qingyu@qq.com)
+ * @author Chen QingYu (chen_qingyu@qq.com)
  * @brief A simple Brainfuck interpreter implemented in C. Reference to http://brainfuck.org/
- * @version 1.0.0
+ * @version 1.1.0
  * @date 2021.04.25
- *
- * @copyright Copyright (c) 2021
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define BF_VERSION "1.0.0"
+#define BF_VERSION "1.1.0"
 
-#define MAX_CODE_SIZE 65536
+#define CODE_SIZE 65536
 #define MEMORY_SIZE (65536 * 4)
 
 // Copy of the program code.
-char code[MAX_CODE_SIZE] = {0};
+char code[CODE_SIZE] = {0};
 int code_ptr = 0;
 int code_length = 0;
 
@@ -27,7 +25,10 @@ short int memory[MEMORY_SIZE] = {0};
 int memory_ptr = 0;
 
 // To save matching '[' for each ']' and vice versa.
-int targets[MAX_CODE_SIZE] = {0};
+int targets[CODE_SIZE] = {0};
+
+// Show help message.
+void show_help();
 
 // Read the contents of the file.
 void read_file(char* file);
@@ -36,29 +37,70 @@ void read_file(char* file);
 void preprocess();
 
 // Execute the program.
-void interpret();
+void interpret(int enable_comment, int enable_debug);
 
 int main(int argc, char* argv[])
 {
-    if (argc != 2)
+    if (argc == 1)
     {
-        fprintf(stderr, "Usage: bf <filename>\n");
+        show_help();
         exit(EXIT_FAILURE);
     }
 
-    if (strcmp(argv[1], "--version") == 0)
-    {
-        printf("bf.exe %s\n", BF_VERSION);
-        exit(EXIT_SUCCESS);
-    }
+    // Flag for comment feature: ';'
+    int enable_comment = 0;
 
-    read_file(argv[1]);
+    // Flag for debug feature: '#'
+    int enable_debug = 0;
+
+    for (int i = 1; i < argc; i++)
+    {
+        if (strcmp(argv[i], "--comment") == 0 || strcmp(argv[i], "-c") == 0)
+        {
+            enable_comment = 1;
+        }
+        else if (strcmp(argv[i], "--debug") == 0 || strcmp(argv[i], "-d") == 0)
+        {
+            enable_debug = 1;
+        }
+        else if (strcmp(argv[i], "-cd") == 0 || strcmp(argv[i], "-dc") == 0)
+        {
+            enable_comment = 1;
+            enable_debug = 1;
+        }
+        else if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-v") == 0)
+        {
+            printf("bf.exe %s by Chen QingYu\n", BF_VERSION);
+            exit(EXIT_SUCCESS);
+        }
+        else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
+        {
+            show_help();
+            exit(EXIT_SUCCESS);
+        }
+        else
+        {
+            read_file(argv[i]);
+            break;
+        }
+    }
 
     preprocess();
 
-    interpret();
+    interpret(enable_comment, enable_debug);
 
     return EXIT_SUCCESS;
+}
+
+void show_help()
+{
+    puts("A simple Brainfuck interpreter written by Chen QingYu.");
+    puts("Usage: bf [options] <filename>");
+    puts("  options:");
+    puts("    -c, --comment  Enable comment feature: ';'.");
+    puts("    -d, --debug    Enable debug feature: '#'.");
+    puts("    -v, --version  Show program version and exit.");
+    puts("    -h, --help     Show this help message and exit.");
 }
 
 void read_file(char* file)
@@ -70,14 +112,14 @@ void read_file(char* file)
         exit(EXIT_FAILURE);
     }
 
-    code_length = fread(code, 1, MAX_CODE_SIZE, program);
+    code_length = fread(code, 1, CODE_SIZE, program);
     fclose(program);
 }
 
 void preprocess()
 {
     // To store locations of still-unmatched '['s.
-    int stack[MAX_CODE_SIZE];
+    int stack[CODE_SIZE];
     int stack_ptr = 0;
 
     for (code_ptr = 0; code_ptr < code_length; code_ptr++)
@@ -107,7 +149,7 @@ void preprocess()
     }
 }
 
-void interpret()
+void interpret(int enable_comment, int enable_debug)
 {
     int c;
     for (code_ptr = 0; code_ptr < code_length; code_ptr++)
@@ -138,14 +180,13 @@ void interpret()
             case ',':
                 if ((c = getchar()) != EOF)
                 {
-                    memory[memory_ptr] = (c == '\n' ? 10 : c);
+                    memory[memory_ptr] = c;
                 }
                 break;
 
             // Output character at current data cell.
             case '.':
-                putchar(memory[memory_ptr] == 10 ? '\n' : memory[memory_ptr]);
-                fflush(stdout);
+                putchar(memory[memory_ptr]);
                 break;
 
             // Begin loop.
@@ -164,14 +205,27 @@ void interpret()
                 }
                 break;
 
+            // Single-line comment.
+            case ';':
+                if (enable_comment)
+                {
+                    while (code[++code_ptr] != '\n')
+                    {
+                    }
+                }
+                break;
+
             // Print the program's internal state for debugging.
             case '#':
-                printf("\n");
-                for (int i = 0; i < 16; i++)
+                if (enable_debug)
                 {
-                    printf("%4d", (signed char)memory[i]);
+                    printf("\n");
+                    for (int i = 0; i < 16; i++)
+                    {
+                        printf("%02X ", (signed char)memory[i]);
+                    }
+                    printf("\n%*s\n", memory_ptr * 3 + 2, "^^");
                 }
-                printf("\n%*s\n", memory_ptr * 4 + 4, "^");
                 break;
 
             // Ignore other characters.
