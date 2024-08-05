@@ -148,7 +148,7 @@ void preprocess()
         {
             if (stack_ptr == 0) // and there is no '[' left on the stack, it's an error
             {
-                fprintf(stderr, "Error: Unmatched ']' at position %d.", code_ptr);
+                fprintf(stderr, "Error: Unmatched ']' at position %d.\n", code_ptr);
                 exit(EXIT_FAILURE);
             }
             else
@@ -160,7 +160,7 @@ void preprocess()
     }
     if (stack_ptr > 0) // any unmatched '[' still left on the stack raise an error too
     {
-        fprintf(stderr, "Error: Unmatched '[' at position %d.", stack[--stack_ptr]);
+        fprintf(stderr, "Error: Unmatched '[' at position %d.\n", stack[--stack_ptr]);
         exit(EXIT_FAILURE);
     }
 
@@ -220,7 +220,7 @@ void interpret(int enable_comment, int enable_debug)
             case '<':
                 if (--memory_ptr < 0)
                 {
-                    fprintf(stderr, "Error: Memory pointer crosses memory lower bound.");
+                    fprintf(stderr, "Error: Memory pointer crosses memory lower bound.\n");
                     exit(EXIT_FAILURE);
                 }
                 break;
