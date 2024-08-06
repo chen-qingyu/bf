@@ -1,4 +1,4 @@
-set_version("1.1.0")
+set_version("1.1.1")
 set_languages("c11")
 add_rules("mode.debug", "mode.release")
 

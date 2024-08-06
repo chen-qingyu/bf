@@ -2,7 +2,7 @@
  * @file bf.c
  * @author Chen QingYu (chen_qingyu@qq.com)
  * @brief A simple Brainfuck interpreter implemented in C. Reference to http://brainfuck.org/
- * @version 1.1.0
+ * @version 1.1.1
  * @date 2021.04.25
  */
 
@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BF_VERSION "1.1.0"
+#define BF_VERSION "1.1.1"
 
 // Copy of the program code.
 char* code = NULL;
