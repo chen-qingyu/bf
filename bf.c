@@ -269,11 +269,19 @@ void interpret(int enable_comment, int enable_debug)
                 if (enable_debug)
                 {
                     printf("\n");
-                    for (int i = 0; i < 16; i++)
+                    for (int i = memory_ptr - 8; i < memory_ptr + 8; i++)
                     {
-                        printf("%02hhX ", memory[i]);
+                        if (i < 0)
+                        {
+                            printf("-- ");
+                        }
+                        else
+                        {
+                            printf("%02hhX ", memory[i]);
+                        }
                     }
-                    printf("\n%*s\n", memory_ptr * 3 + 2, "^^");
+                    printf("\n%*s\n", 8 * 3 + 2, "^^");
+                    printf("%*X\n", 8 * 3 + 2, memory_ptr);
                 }
                 break;
 
