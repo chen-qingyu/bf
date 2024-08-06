@@ -1,8 +1,10 @@
 # Brief
 
-A simple Brainfuck interpreter implemented in C.
+A simple [Brainfuck](https://esolangs.org/wiki/Brainfuck) interpreter implemented in C.
 
 # Usage
+
+This software is available in Microsoft's [WinGet](https://github.com/microsoft/winget-cli), if you are using Windows 10 or later, install it directly from `winget install ChenQingYu.BF`. Or, compile and install it as you please.
 
 ```
 Usage: bf [options] <filename>
