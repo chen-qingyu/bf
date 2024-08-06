@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
         }
         else if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-v") == 0)
         {
-            printf("bf.exe %s by Chen QingYu\n", BF_VERSION);
+            printf("bf version %s by Chen QingYu\n", BF_VERSION);
             exit(EXIT_SUCCESS);
         }
         else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
